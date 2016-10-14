@@ -4,8 +4,9 @@
  * Module dependencies.
  */
 
-var app = require('../src/server/server');
-var debug = require('debug')('untitled1:server');
+var app = require('../src/server/server').init({redis:{}});
+
+var debug = require('debug')('rufina:server');
 var http = require('http');
 
 /**

@@ -1,6 +1,6 @@
 const storage = require('./storage');
 const emmiter = require('./event-emmiter');
-const DEAD_INSTANCE = require('./events').DEAD_INSTANCE;
+const events = require('./events');;
 
 let DEFAULT_CLEANUP_TIME = 10 * 1000;
 let DEFAULT_DEAD_AGE = 600 * 1000;
@@ -21,7 +21,8 @@ const start = ({interval = DEFAULT_CLEANUP_TIME, deadAge  = DEFAULT_DEAD_AGE}) =
                 .filter(agePredicate)
                 .forEach(instance => {
                             console.log("Found dead item : ", instance.id);
-                            emmiter.emit(DEAD_INSTANCE, instance.id);
+                            emmiter.emit(events.DELETE_INSTANCE, instance.id);
+                            emmiter.emit(events.CLUSTER_NOTIFY_DELETE, instance.id);
                 })
     }, interval);
 }

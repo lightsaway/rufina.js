@@ -1,36 +1,18 @@
 const utils = require('./utils');
 const R = require('ramda');
-
-const eventemmitter = require('./event-emmiter');
-const {DEAD_INSTANCE, NEW_INSTANCE, BEFORE_CLUSTER_DELETE, CLUSTER_DELETE, AFTER_CLUSTER_DELETE} = require('./events');
-
 const storage = {instances: {}};
 const clone = utils.cloneByJSON;
 
-const convertSetToArray = (object) => {
-    return Object.keys(object).map(k => object[k]);
-}
-
-const deleteInstance = (id) => {
-    if (storage.instances[id]) {
-        delete storage.instances[id];
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 const getInstances = (query) => {
     if (query && Object.keys(query).length > 0) {
-        return convertSetToArray(storage.instances)
+        return utils.convertSetToArray(storage.instances)
             .filter(x => {
                 object = utils.reduceToSameProps(x, query);
                 return R.equals(object, query);
             });
     }
     else {
-        return convertSetToArray(storage.instances);
+        return utils.convertSetToArray(storage.instances);
     }
 }
 
@@ -40,20 +22,23 @@ const getInstance = (id) => {
 }
 
 const storeInstance = (instance) => {
-    instance.lastNotificationDate = new Date().getTime();
+    instance.lastNotificationDate = new Date().getTime() + "";
+    console.log("STORE: storing instance ", instance)
     storage.instances[instance.id] = instance;
+    return storage.instances[instance.id];
 }
 
-eventemmitter.on(DEAD_INSTANCE, (id) => {
-    console.log("storage on delete")
-    deleteInstance(id);
-});
-
-eventemmitter.on(NEW_INSTANCE, (id) => {
-    console.log("storage on new")
-    deleteInstance(id);
-});
-
+const deleteInstance = (id) => {
+    if (storage.instances[id]) {
+        console.log("STORE: deleting instance ", id)
+        const item = clone(storage.instances[id]);
+        delete storage.instances[id];
+        return item;
+    }
+    else {
+        return undefined;
+    }
+}
 
 module.exports.storeInstance = storeInstance;
 module.exports.deleteInstance = deleteInstance;

@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const storage = require('../storage');
+const emmiter = require('../event-emmiter');
+const events = require('../events');
 
 /* GET instances array. */
 router.get('/instances', function(req, res, next) {
@@ -20,8 +22,9 @@ router.get('/instances/:id', function(req, res, next) {
 
 /* UNREGISTER single instance */
 router.delete('/instances/:id', function(req, res, next) {
-  const isDeleted = storage.deleteInstance(req.params.id);
-  if(isDeleted){
+  const instance = storage.deleteInstance(req.params.id);
+  if(instance){
+    emmiter.emit(events.CLUSTER_NOTIFY_DELETE , instance);
     res.status(204).json( {id: req.params.id, message:"Deleted"});
   }
   else{
@@ -32,8 +35,11 @@ router.delete('/instances/:id', function(req, res, next) {
 
 /* POST single instance */
 router.post('/instances', function(req, res, next) {
-  storage.storeInstance(req.body);
+  const instance = storage.storeInstance(req.body);
+
+  emmiter.emit(events.CLUSTER_NOTIFY_UPDATE , instance);
   res.status(201).json( {message:"registered"});
+
 });
 
 
